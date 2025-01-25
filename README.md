@@ -1,29 +1,5 @@
-# GraspNet Baseline
-Baseline model for "GraspNet-1Billion: A Large-Scale Benchmark for General Object Grasping" (CVPR 2020).
-
-[[paper](https://openaccess.thecvf.com/content_CVPR_2020/papers/Fang_GraspNet-1Billion_A_Large-Scale_Benchmark_for_General_Object_Grasping_CVPR_2020_paper.pdf)]
-[[dataset](https://graspnet.net/)]
-[[API](https://github.com/graspnet/graspnetAPI)]
-[[doc](https://graspnetapi.readthedocs.io/en/latest/index.html)]
-
-<div align="center">    
-    <img src="https://github.com/chenxi-wang/materials/blob/master/graspnet-baseline/doc/gifs/scene_0114.gif", width="240", alt="scene_0114" />
-    <img src="https://github.com/chenxi-wang/materials/blob/master/graspnet-baseline/doc/gifs/scene_0116.gif", width="240", alt="scene_0116" />
-    <img src="https://github.com/chenxi-wang/materials/blob/master/graspnet-baseline/doc/gifs/scene_0117.gif", width="240", alt="scene_0117" />
-    <br> Top 50 grasps detected by our baseline model.
-</div>
-
-![teaser](doc/teaser.png)
-
-## Requirements
-- Python 3
-- PyTorch 1.6
-- Open3d >=0.8
-- TensorBoard 2.3
-- NumPy
-- SciPy
-- Pillow
-- tqdm
+The detailed installation process will not be repeated here, so you can go to the original github repository to find it.
+Since graspnet-baseline is based on an older version of the torch, newer versions of the torch no longer support some of the code. So here are some changes to make this part of the code work with the newer versions of the torch.
 
 ## Installation
 Get the code.
@@ -31,7 +7,7 @@ Get the code.
 git clone https://github.com/graspnet/graspnet-baseline.git
 cd graspnet-baseline
 ```
-Install packages via Pip.
+Install packages via Pip. PS: You need to note that you need to use a version of python lower than 3.12, because open3d version is not supported, and I am using python 3.7. Also you need to install torch to match the cuda version, so that you can successfully install pointnet2 and knn later.
 ```bash
 pip install -r requirements.txt
 ```
@@ -51,25 +27,14 @@ git clone https://github.com/graspnet/graspnetAPI.git
 cd graspnetAPI
 pip install .
 ```
-
-## Tolerance Label Generation
-Tolerance labels are not included in the original dataset, and need additional generation. Make sure you have downloaded the orginal dataset from [GraspNet](https://graspnet.net/). The generation code is in [dataset/generate_tolerance_label.py](dataset/generate_tolerance_label.py). You can simply generate tolerance label by running the script: (`--dataset_root` and `--num_workers` should be specified according to your settings)
+or you can pip install
 ```bash
-cd dataset
-sh command_generate_tolerance_label.sh
+pip install graspnetAPI
 ```
 
-Or you can download the tolerance labels from [Google Drive](https://drive.google.com/file/d/1DcjGGhZIJsxd61719N0iWA7L6vNEK0ci/view?usp=sharing)/[Baidu Pan](https://pan.baidu.com/s/1HN29P-csHavJF-R_wec6SQ) and run:
-```bash
-mv tolerance.tar dataset/
-cd dataset
-tar -xvf tolerance.tar
-```
+## Testing
 
-## Training and Testing
-Training examples are shown in [command_train.sh](command_train.sh). `--dataset_root`, `--camera` and `--log_dir` should be specified according to your settings. You can use TensorBoard to visualize training process.
-
-Testing examples are shown in [command_test.sh](command_test.sh), which contains inference and result evaluation. `--dataset_root`, `--camera`, `--checkpoint_path` and `--dump_dir` should be specified according to your settings. Set `--collision_thresh` to -1 for fast inference.
+To verify that the installation was successful, create the folder logs/log_kn and download the following checkpoint-kn.tar, rename it to checkpoint.tar and place it in there
 
 The pretrained weights can be downloaded from:
 
@@ -82,51 +47,11 @@ The pretrained weights can be downloaded from:
 
 `checkpoint-rs.tar` and `checkpoint-kn.tar` are trained using RealSense data and Kinect data respectively.
 
-## Demo
-A demo program is provided for grasp detection and visualization using RGB-D images. You can refer to [command_demo.sh](command_demo.sh) to run the program. `--checkpoint_path` should be specified according to your settings (make sure you have downloaded the pretrained weights, we recommend the realsense model since it might transfer better). The output should be similar to the following example:
 
-<div align="center">    
-    <img src="doc/example_data/demo_result.png", width="480", alt="demo_result" />
-</div>
-
-__Try your own data__ by modifying `get_and_process_data()` in [demo.py](demo.py). Refer to [doc/example_data/](doc/example_data/) for data preparation. RGB-D images and camera intrinsics are required for inference. `factor_depth` stands for the scale for depth value to be transformed into meters. You can also add a workspace mask for denser output.
-
-## Results
-Results "In repo" report the model performance with single-view collision detection as post-processing. In evaluation we set `--collision_thresh` to 0.01.
-
-Evaluation results on RealSense camera:
-|          |        | Seen             |                  |        | Similar          |                  |        | Novel            |                  | 
-|:--------:|:------:|:----------------:|:----------------:|:------:|:----------------:|:----------------:|:------:|:----------------:|:----------------:|
-|          | __AP__ | AP<sub>0.8</sub> | AP<sub>0.4</sub> | __AP__ | AP<sub>0.8</sub> | AP<sub>0.4</sub> | __AP__ | AP<sub>0.8</sub> | AP<sub>0.4</sub> |
-| In paper | 27.56  | 33.43            | 16.95            | 26.11  | 34.18            | 14.23            | 10.55  | 11.25            | 3.98             |
-| In repo  | 47.47  | 55.90            | 41.33            | 42.27  | 51.01            | 35.40            | 16.61  | 20.84            | 8.30             |
-
-Evaluation results on Kinect camera:
-|          |        | Seen             |                  |        | Similar          |                  |        | Novel            |                  | 
-|:--------:|:------:|:----------------:|:----------------:|:------:|:----------------:|:----------------:|:------:|:----------------:|:----------------:|
-|          | __AP__ | AP<sub>0.8</sub> | AP<sub>0.4</sub> | __AP__ | AP<sub>0.8</sub> | AP<sub>0.4</sub> | __AP__ | AP<sub>0.8</sub> | AP<sub>0.4</sub> |
-| In paper | 29.88  | 36.19            | 19.31            | 27.84  | 33.19            | 16.62            | 11.51  | 12.92            | 3.56             |
-| In repo  | 42.02  | 49.91            | 35.34            | 37.35  | 44.82            | 30.40            | 12.17  | 15.17            | 5.51             |
-
-## Citation
-Please cite our paper in your publications if it helps your research:
+```bash
+sh command_demo.sh
 ```
-@article{fang2023robust,
-  title={Robust grasping across diverse sensor qualities: The GraspNet-1Billion dataset},
-  author={Fang, Hao-Shu and Gou, Minghao and Wang, Chenxi and Lu, Cewu},
-  journal={The International Journal of Robotics Research},
-  year={2023},
-  publisher={SAGE Publications Sage UK: London, England}
-}
+Then run the demo, and when the image from the original repository appears, it proves that the installation has been successful!
 
-@inproceedings{fang2020graspnet,
-  title={GraspNet-1Billion: A Large-Scale Benchmark for General Object Grasping},
-  author={Fang, Hao-Shu and Wang, Chenxi and Gou, Minghao and Lu, Cewu},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition(CVPR)},
-  pages={11444--11453},
-  year={2020}
-}
-```
-
-## License
-All data, labels, code and models belong to the graspnet team, MVIG, SJTU and are freely available for free non-commercial use, and may be redistributed under these conditions. For commercial queries, please drop an email at fhaoshu at gmail_dot_com and cc lucewu at sjtu.edu.cn .
+## Acknowledgements
+Special thanks to chenxin-wang and fang-haoshu(https://github.com/graspnet/graspnet-baseline) for creating this amazing project. The modifications in this repository were inspired by their work.
